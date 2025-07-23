@@ -1,0 +1,44 @@
+version: '3.3'
+
+services:
+  crater:
+    image: webdevops/php-apache-dev:8.1
+    container_name: crater-app
+    working_dir: /var/www/html
+    volumes:
+      - ./crater:/var/www/html
+    ports:
+      - "8010:80"
+    environment:
+      WEB_DOCUMENT_ROOT: /var/www/html/public
+      PHP_DISPLAY_ERRORS: "1"
+      TELESCOPE_ENABLED: "true"
+      SENTRY_LARAVEL_DSN: "${SENTRY_LARAVEL_DSN}"
+      SENTRY_TRACES_SAMPLE_RATE: "1.0"
+      BLACKFIRE_CLIENT_ID: "${BLACKFIRE_CLIENT_ID}"
+      BLACKFIRE_CLIENT_TOKEN: "${BLACKFIRE_CLIENT_TOKEN}"
+      BLACKFIRE_SERVER_ID: "${BLACKFIRE_SERVER_ID}"
+      BLACKFIRE_SERVER_TOKEN: "${BLACKFIRE_SERVER_TOKEN}"
+    depends_on:
+      - crater-db
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+
+  crater-db:
+    image: mysql:8
+    container_name: crater-db
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_DATABASE: crater
+      MYSQL_USER: crater
+      MYSQL_PASSWORD: crater
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - crater_db:/var/lib/mysql
+
+volumes:
+  crater_db:

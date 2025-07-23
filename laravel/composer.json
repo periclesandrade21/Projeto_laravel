@@ -1,0 +1,18 @@
+{
+  "name": "mastertax/laravel",
+  "type": "project",
+  "require": {
+    "joellytton/laravel-nfe": "*"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "packages/joellytton/laravel-nfe",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}

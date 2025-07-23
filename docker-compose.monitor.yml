@@ -1,0 +1,66 @@
+version: '3.3'
+
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+  node_exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:alpine-latest
+    container_name: zabbix-server
+    env_file:
+      - ./zabbix/env_vars.env
+    ports:
+      - "10051:10051"
+    depends_on:
+      - zabbix-db
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql:alpine-latest
+    container_name: zabbix-web
+    env_file:
+      - ./zabbix/env_vars.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - zabbix-server
+      - zabbix-db
+
+  zabbix-db:
+    image: mysql:5.7
+    container_name: zabbix-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - zabbix_db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+volumes:
+  grafana_data:
+  zabbix_db_data:
